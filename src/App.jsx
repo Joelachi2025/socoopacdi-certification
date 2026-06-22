@@ -93,7 +93,7 @@ function StatusPill({ conforme }) {
   );
 }
 
-function FolderCard({ folder, image, onView, onUploaded, onDeleted }) {
+function FolderCard({ folder, image, onView, onUploaded, onDeleted, onDeleteFolder }) {
   const inputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
 
@@ -141,6 +141,7 @@ function FolderCard({ folder, image, onView, onUploaded, onDeleted }) {
         <div className="folder-card-title">
           <Folder size={16} className="folder-icon" />
           <span>{folder.nom}</span>
+          <Trash2 size={14} className="folder-delete" onClick={() => onDeleteFolder(folder)} />
         </div>
         <div className="folder-card-count">{(folder.documents || []).length} document(s)</div>
         <div className="folder-card-docs">
@@ -364,13 +365,25 @@ function Dashboard({ session }) {
     loadAll();
   }
 
+  async function deleteFolder(folder) {
+    if (!window.confirm(`Supprimer le dossier "${folder.nom}" et tous ses documents ?`)) return;
+    const paths = (folder.documents || []).map((d) => d.chemin_stockage);
+    if (paths.length) await supabase.storage.from(BUCKET).remove(paths);
+    await supabase.from("dossiers").delete().eq("id", folder.id);
+    setAllDocs((d) => d.filter((doc) => doc.dossier_id !== folder.id));
+    loadAll();
+  }
+
   function handleUploaded(dossierId, row) {
     setAllDocs((d) => [...d, row]);
+    supabase.from("dossiers").update({ conforme: true }).eq("id", dossierId);
     setChapters((chs) => chs.map((c) => ({
       ...c,
       requirements: c.requirements.map((r) => ({
         ...r,
-        folders: r.folders.map((f) => f.id === dossierId ? { ...f, documents: [...f.documents, row] } : f),
+        folders: r.folders.map((f) => f.id === dossierId
+          ? { ...f, conforme: true, documents: [...f.documents, row] }
+          : f),
       })),
     })));
   }
@@ -380,7 +393,13 @@ function Dashboard({ session }) {
       ...c,
       requirements: c.requirements.map((r) => ({
         ...r,
-        folders: r.folders.map((f) => f.id === dossierId ? { ...f, documents: f.documents.filter((d) => d.id !== docId) } : f),
+        folders: r.folders.map((f) => {
+          if (f.id !== dossierId) return f;
+          const remaining = f.documents.filter((d) => d.id !== docId);
+          const stillConforme = remaining.length > 0;
+          supabase.from("dossiers").update({ conforme: stillConforme }).eq("id", dossierId);
+          return { ...f, conforme: stillConforme, documents: remaining };
+        }),
       })),
     })));
   }
@@ -448,6 +467,8 @@ function Dashboard({ session }) {
         .pill-bad { background:var(--bad-bg); color:var(--bad-fg); }
         .folder-card-body { padding:14px 16px; }
         .folder-card-title { display:flex; align-items:flex-start; gap:8px; font-weight:700; font-size:13.5px; line-height:1.35; color:var(--green-deep); }
+        .folder-delete { margin-left:auto; flex-shrink:0; cursor:pointer; color:var(--ink-soft); opacity:.6; }
+        .folder-delete:hover { color:var(--bad-fg); opacity:1; }
         .folder-icon { flex-shrink:0; margin-top:1px; color:var(--gold); }
         .folder-card-count { font-size:12px; color:var(--ink-soft); margin:4px 0 10px; }
         .doc-row { display:flex; align-items:center; justify-content:space-between; padding:6px 8px; background:var(--bg); border-radius:6px; margin-bottom:6px; font-size:12px; }
@@ -580,7 +601,7 @@ function Dashboard({ session }) {
               <div className="folders-grid">
                 {activeReq.folders.map((f, i) => (
                   <FolderCard key={f.id} folder={f} image={PLACEHOLDER_IMAGES[i % PLACEHOLDER_IMAGES.length]}
-                    onView={setViewingDoc} onUploaded={handleUploaded} onDeleted={handleDeleted} />
+                    onView={setViewingDoc} onUploaded={handleUploaded} onDeleted={handleDeleted} onDeleteFolder={deleteFolder} />
                 ))}
                 <div className="folder-card add-folder-card" onClick={() => addFolder(activeReq.id)}>
                   <Plus size={22} />
