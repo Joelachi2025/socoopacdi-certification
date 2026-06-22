@@ -274,6 +274,7 @@ function Dashboard({ session }) {
   const [editingChapterId, setEditingChapterId] = useState(null);
   const [viewingDoc, setViewingDoc] = useState(null);
   const [addingChapter, setAddingChapter] = useState(false);
+  const [allDocs, setAllDocs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { loadAll(); }, []);
@@ -301,6 +302,7 @@ function Dashboard({ session }) {
     }));
 
     setChapters(chaptersFull);
+    setAllDocs(docs || []);
     if (chaptersFull.length) {
       setActiveChapterId(chaptersFull[0].id);
       setExpanded({ [chaptersFull[0].id]: true });
@@ -356,6 +358,7 @@ function Dashboard({ session }) {
   }
 
   function handleUploaded(dossierId, row) {
+    setAllDocs((d) => [...d, row]);
     setChapters((chs) => chs.map((c) => ({
       ...c,
       requirements: c.requirements.map((r) => ({
@@ -365,6 +368,7 @@ function Dashboard({ session }) {
     })));
   }
   function handleDeleted(dossierId, docId) {
+    setAllDocs((d) => d.filter((doc) => doc.id !== docId));
     setChapters((chs) => chs.map((c) => ({
       ...c,
       requirements: c.requirements.map((r) => ({
@@ -397,7 +401,11 @@ function Dashboard({ session }) {
           color:var(--ink-soft); cursor:pointer; border-bottom:2.5px solid transparent; }
         .nav-tab.active { color:var(--green-deep); border-bottom-color:var(--gold); }
         .layout { display:flex; }
-        .sidebar { width:290px; background:var(--green-deep); color:#e9efe6; min-height:calc(100vh - 110px); padding:18px 0; }
+        .sidebar { width:290px; background:var(--green-deep); color:#e9efe6; min-height:calc(100vh - 110px); padding:18px 0; display:flex; flex-direction:column; }
+        .storage-indicator { margin-top:auto; padding:14px 18px; border-top:1px solid rgba(255,255,255,.12); }
+        .storage-label { font-size:11px; font-weight:700; color:#cfd6c8; margin-bottom:6px; letter-spacing:.5px; }
+        .storage-bar { background:rgba(255,255,255,.15); }
+        .storage-sub { font-size:11px; color:#aab5a2; margin-top:5px; }
         .sidebar-heading { font-size:11px; letter-spacing:1.2px; font-weight:700; color:var(--gold); padding:0 18px 12px; opacity:.9; }
         .ch-group { padding:10px 10px; }
         .ch-header { display:flex; align-items:center; gap:8px; padding:10px 10px; font-weight:700; font-size:14px; cursor:pointer; border-radius:6px; }
@@ -522,6 +530,22 @@ function Dashboard({ session }) {
             <div className="add-req-btn" style={{ fontSize: "13px" }} onClick={() => setAddingChapter(true)}>
               <Plus size={14} /> Ajouter un chapitre
             </div>
+          </div>
+
+          <div className="storage-indicator">
+            {(() => {
+              const totalBytes = allDocs.reduce((sum, d) => sum + (d.taille_octets || 0), 0);
+              const limitBytes = 1024 * 1024 * 1024; // 1 Go (plan gratuit Supabase)
+              const pct = Math.min(100, (totalBytes / limitBytes) * 100);
+              const mb = (totalBytes / (1024 * 1024)).toFixed(1);
+              return (
+                <>
+                  <div className="storage-label">Stockage utilisé</div>
+                  <div className="progress-bar storage-bar"><div className="progress-fill" style={{ width: `${pct}%`, background: pct > 80 ? "#e88080" : "#c08a2e" }} /></div>
+                  <div className="storage-sub">{mb} Mo / 1024 Mo</div>
+                </>
+              );
+            })()}
           </div>
         </div>
 
