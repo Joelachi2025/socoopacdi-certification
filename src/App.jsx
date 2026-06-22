@@ -224,6 +224,42 @@ const PLACEHOLDER_IMAGES = [
   "https://images.unsplash.com/photo-1611588729417-31a8d2c84478?w=400&q=60",
 ];
 
+// Images de cacao associées à chaque chapitre (par ordre de création)
+const COCOA_IMAGES = [
+  "https://images.unsplash.com/photo-1611588729417-31a8d2c84478?w=900&q=70", // cabosses sur l'arbre
+  "https://images.unsplash.com/photo-1612203985729-442bd9e0fb95?w=900&q=70", // cabosses ouvertes
+  "https://images.unsplash.com/photo-1620706857370-e1b9770e8bb1?w=900&q=70", // fèves de cacao
+  "https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=900&q=70", // plantation de cacao
+  "https://images.unsplash.com/photo-1481391319762-47dff72954d9?w=900&q=70", // chocolat / fèves
+];
+function cocoaImageFor(index) {
+  return COCOA_IMAGES[index % COCOA_IMAGES.length];
+}
+
+function ChapterModal({ onSave, onClose }) {
+  const [titre, setTitre] = useState("");
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <span>Ajouter un chapitre</span>
+          <X size={18} className="modal-close" onClick={onClose} />
+        </div>
+        <div className="modal-body">
+          <label>Titre du chapitre</label>
+          <input value={titre} onChange={(e) => setTitre(e.target.value)} placeholder="Ex: Traçabilité" />
+        </div>
+        <div className="modal-footer">
+          <button className="btn-secondary" onClick={onClose}>Annuler</button>
+          <button className="btn-primary" disabled={!titre.trim()} onClick={() => onSave(titre.trim())}>
+            Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ============================================================
 // APPLICATION PRINCIPALE
 // ============================================================
@@ -236,6 +272,7 @@ function Dashboard({ session }) {
   const [editingReq, setEditingReq] = useState(null);
   const [editingChapterId, setEditingChapterId] = useState(null);
   const [viewingDoc, setViewingDoc] = useState(null);
+  const [addingChapter, setAddingChapter] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { loadAll(); }, []);
@@ -275,6 +312,14 @@ function Dashboard({ session }) {
   const activeReq = activeChapter?.requirements.find((r) => r.id === activeReqId);
   const total = activeChapter?.requirements.length || 0;
   const ok = activeChapter?.requirements.filter((r) => r.conforme).length || 0;
+
+  async function saveChapter(titre) {
+    const id = "ch_" + Date.now();
+    await supabase.from("chapitres").insert({ id, titre, ordre: chapters.length + 1 });
+    setAddingChapter(false);
+    setExpanded((e) => ({ ...e, [id]: true }));
+    loadAll();
+  }
 
   function openAddRequirement(chapterId) {
     setEditingChapterId(chapterId);
@@ -442,7 +487,7 @@ function Dashboard({ session }) {
       <div className="layout">
         <div className="sidebar">
           <div className="sidebar-heading">CHAPITRES &amp; EXIGENCES</div>
-          {chapters.map((ch) => (
+          {chapters.map((ch, chIndex) => (
             <div className="ch-group" key={ch.id}>
               <div className="ch-header" onClick={() => setExpanded((e) => ({ ...e, [ch.id]: !e[ch.id] }))}>
                 {expanded[ch.id] ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
@@ -467,12 +512,22 @@ function Dashboard({ session }) {
               )}
             </div>
           ))}
+          <div className="ch-group">
+            <div className="add-req-btn" style={{ fontSize: "13px" }} onClick={() => setAddingChapter(true)}>
+              <Plus size={14} /> Ajouter un chapitre
+            </div>
+          </div>
         </div>
 
         <div className="main">
           {tab === "dossiers" && activeReq && (
             <>
-              <div className="hero">
+              <div
+                className="hero"
+                style={{
+                  backgroundImage: `linear-gradient(120deg, rgba(20,40,25,.88), rgba(30,70,40,.55)), url('${cocoaImageFor(chapters.findIndex((c) => c.id === activeChapterId))}')`,
+                }}
+              >
                 <div className="hero-eyebrow">{activeChapter?.titre.toUpperCase()}</div>
                 <div className="hero-title">{activeReq.id} – {activeReq.label}</div>
               </div>
@@ -510,6 +565,7 @@ function Dashboard({ session }) {
         </div>
       </div>
 
+      {addingChapter && <ChapterModal onSave={saveChapter} onClose={() => setAddingChapter(false)} />}
       {editingReq && (
         <RequirementModal initial={editingReq.id ? editingReq : null} onSave={saveRequirement} onClose={() => setEditingReq(null)} />
       )}
