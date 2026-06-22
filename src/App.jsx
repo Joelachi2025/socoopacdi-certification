@@ -514,7 +514,7 @@ function Dashboard({ session }) {
           <div className="brand-badge">S</div>
           <div>
             <div className="brand-title">SOCOOPACDI COOP-CA – Certification RA 2020</div>
-            <div className="brand-sub">2581 producteurs · Abengourou, CI</div>
+            <div className="brand-sub">2581 producteurs · Divo, CI</div>
           </div>
         </div>
         <div className="topbar-right" onClick={() => supabase.auth.signOut()}>
