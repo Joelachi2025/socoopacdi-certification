@@ -357,6 +357,13 @@ function Dashboard({ session }) {
     loadAll();
   }
 
+  async function addFolder(reqId) {
+    const nom = window.prompt("Nom du dossier (ex: Registre signé)");
+    if (!nom || !nom.trim()) return;
+    await supabase.from("dossiers").insert({ exigence_id: reqId, nom: nom.trim(), conforme: false });
+    loadAll();
+  }
+
   function handleUploaded(dossierId, row) {
     setAllDocs((d) => [...d, row]);
     setChapters((chs) => chs.map((c) => ({
@@ -476,6 +483,9 @@ function Dashboard({ session }) {
         .dash-card-image { height:100px; background-size:cover; background-position:center; }
         .dash-card-body { padding:14px 16px; }
         .dash-card-body h4 { margin:0 0 10px; font-size:14px; color:var(--green-deep); }
+        .add-folder-card { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+          min-height:170px; border:1.5px dashed var(--green-line); color:var(--ink-soft); cursor:pointer; font-size:13px; font-weight:600; }
+        .add-folder-card:hover { background:var(--ok-bg); border-color:var(--green-mid); color:var(--green-deep); }
       `}</style>
 
       <div className="topbar">
@@ -483,7 +493,7 @@ function Dashboard({ session }) {
           <div className="brand-badge">S</div>
           <div>
             <div className="brand-title">SOCOOPACDI COOP-CA – Certification RA 2020</div>
-            <div className="brand-sub">2581 producteurs · Divo, CI</div>
+            <div className="brand-sub">2581 producteurs · Abengourou, CI</div>
           </div>
         </div>
         <div className="topbar-right" onClick={() => supabase.auth.signOut()}>
@@ -572,6 +582,10 @@ function Dashboard({ session }) {
                   <FolderCard key={f.id} folder={f} image={PLACEHOLDER_IMAGES[i % PLACEHOLDER_IMAGES.length]}
                     onView={setViewingDoc} onUploaded={handleUploaded} onDeleted={handleDeleted} />
                 ))}
+                <div className="folder-card add-folder-card" onClick={() => addFolder(activeReq.id)}>
+                  <Plus size={22} />
+                  <span>Ajouter un dossier</span>
+                </div>
               </div>
             </>
           )}
