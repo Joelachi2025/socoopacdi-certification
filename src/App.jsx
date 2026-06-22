@@ -227,11 +227,11 @@ const PLACEHOLDER_IMAGES = [
 
 // Images de cacao associées à chaque chapitre (par ordre de création)
 const COCOA_IMAGES = [
-  "https://images.unsplash.com/photo-1611588729417-31a8d2c84478?w=900&q=70", // cabosses sur l'arbre
-  "https://images.unsplash.com/photo-1612203985729-442bd9e0fb95?w=900&q=70", // cabosses ouvertes
-  "https://images.unsplash.com/photo-1620706857370-e1b9770e8bb1?w=900&q=70", // fèves de cacao
-  "https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=900&q=70", // plantation de cacao
-  "https://images.unsplash.com/photo-1481391319762-47dff72954d9?w=900&q=70", // chocolat / fèves
+  "https://images.pexels.com/photos/4198696/pexels-photo-4198696.jpeg?w=900&q=70", // cabosses de cacao sur l'arbre
+  "https://images.pexels.com/photos/6157229/pexels-photo-6157229.jpeg?w=900&q=70", // cabosses ouvertes, fèves
+  "https://images.pexels.com/photos/7474318/pexels-photo-7474318.jpeg?w=900&q=70", // fèves de cacao séchées
+  "https://images.pexels.com/photos/5946071/pexels-photo-5946071.jpeg?w=900&q=70", // plantation de cacaoyers
+  "https://images.pexels.com/photos/4197447/pexels-photo-4197447.jpeg?w=900&q=70", // cabosses récoltées
 ];
 function cocoaImageFor(index) {
   if (index < 0) return COCOA_IMAGES[0];
@@ -449,11 +449,11 @@ function Dashboard({ session }) {
         .add-req-btn:hover { background:rgba(255,255,255,.07); }
         .main { flex:1; padding:26px 30px; }
         .hero { border-radius:14px; overflow:hidden; position:relative;
-          background: linear-gradient(120deg, rgba(20,40,25,.88), rgba(30,70,40,.55)),
+          background: linear-gradient(120deg, rgba(20,40,25,.45), rgba(30,70,40,.25)),
           url('https://images.unsplash.com/photo-1611588729417-31a8d2c84478?w=1200&q=60');
           background-size:cover; background-position:center; padding:26px 30px; color:white; margin-bottom:22px; }
-        .hero-eyebrow { color:var(--gold); font-weight:700; font-size:12.5px; letter-spacing:1px; }
-        .hero-title { font-size:22px; font-weight:700; margin-top:6px; }
+        .hero-eyebrow { color:var(--gold); font-weight:700; font-size:12.5px; letter-spacing:1px; text-shadow:0 2px 6px rgba(0,0,0,.6); }
+        .hero-title { font-size:22px; font-weight:700; margin-top:6px; text-shadow:0 2px 8px rgba(0,0,0,.7); }
         .info-row { display:flex; gap:22px; margin-bottom:24px; }
         .info-card { flex:1; background:var(--panel); border:1px solid var(--green-line); border-radius:12px; padding:18px 20px; }
         .info-card h4 { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--green-deep); margin:0 0 8px; }
@@ -514,7 +514,7 @@ function Dashboard({ session }) {
           <div className="brand-badge">S</div>
           <div>
             <div className="brand-title">SOCOOPACDI COOP-CA – Certification RA 2020</div>
-            <div className="brand-sub">2581 producteurs · Divo, CI</div>
+            <div className="brand-sub">2581 producteurs · Abengourou, CI</div>
           </div>
         </div>
         <div className="topbar-right" onClick={() => supabase.auth.signOut()}>
@@ -586,7 +586,7 @@ function Dashboard({ session }) {
               <div
                 className="hero"
                 style={{
-                  backgroundImage: `linear-gradient(120deg, rgba(20,40,25,.88), rgba(30,70,40,.55)), url('${cocoaImageFor(chapters.findIndex((c) => c.id === activeChapterId))}')`,
+                  backgroundImage: `linear-gradient(120deg, rgba(20,40,25,.45), rgba(30,70,40,.25)), url('${cocoaImageFor(chapters.findIndex((c) => c.id === activeChapterId))}')`,
                 }}
               >
                 <div className="hero-eyebrow">{activeChapter?.titre.toUpperCase()}</div>
@@ -618,7 +618,7 @@ function Dashboard({ session }) {
               <div
                 className="hero"
                 style={{
-                  backgroundImage: `linear-gradient(120deg, rgba(20,40,25,.88), rgba(30,70,40,.55)), url('${cocoaImageFor(0)}')`,
+                  backgroundImage: `linear-gradient(120deg, rgba(20,40,25,.45), rgba(30,70,40,.25)), url('${cocoaImageFor(0)}')`,
                 }}
               >
                 <div className="hero-eyebrow">VUE D'ENSEMBLE</div>
