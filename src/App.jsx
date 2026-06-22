@@ -233,6 +233,7 @@ const COCOA_IMAGES = [
   "https://images.unsplash.com/photo-1481391319762-47dff72954d9?w=900&q=70", // chocolat / fèves
 ];
 function cocoaImageFor(index) {
+  if (index < 0) return COCOA_IMAGES[0];
   return COCOA_IMAGES[index % COCOA_IMAGES.length];
 }
 
@@ -462,6 +463,11 @@ function Dashboard({ session }) {
         .btn-primary:hover { background:var(--green-mid); }
         .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
         .btn-secondary { background:var(--bg); color:var(--ink-soft); }
+        .dashboard-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:20px; }
+        .dash-card { background:var(--panel); border:1px solid var(--green-line); border-radius:12px; overflow:hidden; }
+        .dash-card-image { height:100px; background-size:cover; background-position:center; }
+        .dash-card-body { padding:14px 16px; }
+        .dash-card-body h4 { margin:0 0 10px; font-size:14px; color:var(--green-deep); }
       `}</style>
 
       <div className="topbar">
@@ -550,15 +556,32 @@ function Dashboard({ session }) {
           )}
           {tab === "dashboard" && (
             <>
-              <div className="hero"><div className="hero-eyebrow">VUE D'ENSEMBLE</div><div className="hero-title">Avancement de la certification</div></div>
-              <div className="info-row">
-                <div className="info-card">
-                  <h4>{activeChapter?.titre}</h4>
-                  <div className="progress-wrap">
-                    <div className="progress-bar"><div className="progress-fill" style={{ width: `${total ? (ok / total) * 100 : 0}%` }} /></div>
-                    <span>{ok}/{total} conformes</span>
-                  </div>
-                </div>
+              <div
+                className="hero"
+                style={{
+                  backgroundImage: `linear-gradient(120deg, rgba(20,40,25,.88), rgba(30,70,40,.55)), url('${cocoaImageFor(0)}')`,
+                }}
+              >
+                <div className="hero-eyebrow">VUE D'ENSEMBLE</div>
+                <div className="hero-title">Avancement de la certification</div>
+              </div>
+              <div className="dashboard-grid">
+                {chapters.map((c, i) => {
+                  const t = c.requirements.length;
+                  const o = c.requirements.filter((r) => r.conforme).length;
+                  return (
+                    <div className="dash-card" key={c.id}>
+                      <div className="dash-card-image" style={{ backgroundImage: `url('${cocoaImageFor(i)}')` }} />
+                      <div className="dash-card-body">
+                        <h4>{c.titre}</h4>
+                        <div className="progress-wrap">
+                          <div className="progress-bar"><div className="progress-fill" style={{ width: `${t ? (o / t) * 100 : 0}%` }} /></div>
+                          <span>{o}/{t} conformes</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </>
           )}
