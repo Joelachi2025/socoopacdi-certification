@@ -24,8 +24,10 @@ function LoginScreen({ onLoggedIn }) {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const fn = mode === "signin" ? supabase.auth.signInWithPassword : supabase.auth.signUp;
-    const { data, error } = await fn({ email, password });
+    const { data, error } =
+      mode === "signin"
+        ? await supabase.auth.signInWithPassword({ email, password })
+        : await supabase.auth.signUp({ email, password });
     setLoading(false);
     if (error) {
       setError(error.message);
@@ -422,7 +424,7 @@ function Dashboard({ session }) {
           <div className="brand-badge">S</div>
           <div>
             <div className="brand-title">SOCOOPACDI COOP-CA – Certification RA 2020</div>
-            <div className="brand-sub">2581 producteurs · Divo, CI</div>
+            <div className="brand-sub">2581 producteurs · Abengourou, CI</div>
           </div>
         </div>
         <div className="topbar-right" onClick={() => supabase.auth.signOut()}>
